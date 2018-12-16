@@ -3,8 +3,7 @@ import requests
 import csv
 import pandas as pd
 from flask import Flask, render_template, Response, request, redirect, url_for
-import psycopg2
-
+from flask import send_file
 
     
 app = Flask(__name__)
@@ -27,9 +26,6 @@ def getvalue():
             cena_metryy=[]
             ceny=[]
 
-            connection = psycopg2.connect(user = "postgres", password = "blingbling", database = "postgres")
-            cursor = connection.cursor()
-            sql = """INSERT INTO ads (nazwa, dzielnica, pokoj, metry, cena_metr, cena) VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING"""
 
             for i in range(1, 10):
                 page = "https://www.otodom.pl/sprzedaz/mieszkanie/krakow/?search%5Bfilter_float_price%3Afrom%5D="+ cena_p +"&search%5Bfilter_float_price%3Ato%5D="+ cena_k +"&page={}".format(i)
@@ -37,6 +33,7 @@ def getvalue():
                 soup = BeautifulSoup(html.text, 'lxml')
                 
                 for mieszkanie in soup.find_all('div', class_='offer-item-details'):
+                    #cen = mieszkanie.find('li', class_='offer-item-price').text.replace(' ','').replace('\n','').replace('zł', '')
 
                     nazwa = mieszkanie.find('span', class_='offer-item-title').text
                     nazwy.append(nazwa)
@@ -58,10 +55,7 @@ def getvalue():
                     ceny.append(cena)
 
                     csv_writer.writerow([nazwa, dzielnica, pokoj, metry, cena_metr, cena])
-
-                    to_insert = (nazwa, dzielnica, pokoj, metry, cena_metr, cena)
-                    cursor.execute(sql, to_insert)
-                    connection.commit()
+                
 
                 df = pd.DataFrame({'Nazwa':nazwy, 'Dzielnica':dzielnice, 'Pokoj':pokoje, 'Metry':metryy, 'Cena za metr':cena_metryy, 'Cena':ceny})
             
@@ -69,7 +63,7 @@ def getvalue():
 
             return render_template('wynik.html', c1=cena_p, c2=cena_k, data=df)
 
-        elif request.form['submit_button'] == 'extract':    #TYLKO WYKONANIE TRANSFORM
+        if request.form['submit_button'] == 'extract':    #TYLKO WYKONANIE TRANSFORM
             cena_p = request.form['od']
             cena_k = request.form['do']
 
@@ -115,8 +109,14 @@ def getvalue():
                     df = (nazwy, dzielnice, pokoje, metryy, cena_metryy, ceny)
 
             return render_template('extract.html', data=df)
+        
+        if request.form['submit_button'] == 'transform':
 
+            return render_template('transform.html')
 
+@app.route('/csv_file')
+def csv_file():
+    return send_file('cms_scrape.csv', attachment_filename='cms_scrape.csv', as_attachment=True)
 
 @app.route('/')
 def index():
