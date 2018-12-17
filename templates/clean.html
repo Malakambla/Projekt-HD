@@ -32,34 +32,11 @@
           </div>
         </div>
       </nav>
-      <div class="row"><br></div>
-
-     
-
-      <div class="button-center">
-          <p class="tekst" style="font-size: 16pt;">Liczba nowych rekordów dodanych do bazy danych: {{rec}}</p>
-          <a href="/csv_file" ><button class="btn btn-primary mb-2" style="background-color: #bccfdf; color: black">Pobierz plik CSV</button></a>
-      </div>
-
-      <div class="container">
-        <table>
-            {% for row in datat %}
-                <tr>
-                {% for d in row %}
-                    <td>{{ d }}</td>
-                {% endfor %}
-                </tr>
-              {% endfor %}
-        </table>
-        <br><br>
-      </div>
-
-    <div class="container">
-              
-      {% block content %}
-      {{ data.to_html(classes="table table-striped") | safe}}
-      {% endblock %}
-    </div>
+      
+      <div class="col-center">
+        <p class="tekst" style="font-size: 16pt;">Baza danych została pomyślnie wyczyszczona!</p>
+     </div>
+  
 
     </body>
 
